@@ -29,5 +29,5 @@ def home():
     return "Modèle Alzheimer chargé avec succès!"
 
 if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=10000)  # Port obligatoire pour Render
 
-    app.run()

@@ -1,5 +1,13 @@
 import os
 import gdown
+import pkg_resources
+required = {
+    'flask': '2.1.3',
+    'werkzeug': '2.1.2'
+}
+for pkg, ver in required.items():
+    pkg_resources.require(f"{pkg}=={ver}")
+
 from flask import Flask
 
 app = Flask(__name__)
@@ -21,4 +29,5 @@ def home():
     return "Modèle Alzheimer chargé avec succès!"
 
 if __name__ == '__main__':
+
     app.run()

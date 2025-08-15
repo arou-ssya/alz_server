@@ -12,7 +12,7 @@ CORS(app)  # Autorise les requêtes depuis Flutter
 
 # Configuration du modèle
 MODEL_URL = "https://drive.google.com/uc?export=download&confirm=t&id=12zWlffsA0K6czhT1ohELJVN7UoT7AXpH"
-MODEL_PATH = "alzheimer_model_float32.tflite"
+MODEL_PATH = "model/alzheimer_model_float32.tflite"
 
 # Télécharger le modèle au démarrage
 if not os.path.exists(MODEL_PATH):
@@ -66,4 +66,5 @@ def home():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 10000)))
+
 

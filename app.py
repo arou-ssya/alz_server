@@ -11,7 +11,7 @@ app = Flask(__name__)
 CORS(app)  # Autorise les requêtes depuis Flutter
 
 # Configuration du modèle
-MODEL_URL = "https://drive.google.com/uc?export=download&confirm=t&id=1Qm-lh5Fxw_7ojUYVKY81YHcmQ7uOAIRH"
+MODEL_URL = "https://drive.google.com/uc?id=12zWlffsA0K6czhT1ohELJVN7UoT7AXpH"
 MODEL_PATH = "alzheimer_model_float32.tflite"
 
 # Télécharger le modèle au démarrage

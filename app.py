@@ -1,0 +1,24 @@
+import os
+import gdown
+from flask import Flask
+
+app = Flask(__name__)
+
+# Config Google Drive
+MODEL_URL = "https://drive.google.com/uc?id=1Qm-lh5Fxw_7ojUYVKY81YHcmQ7uOAIRH"  # ID extrait de votre lien
+MODEL_PATH = "alzheimer_model_float32.tflite"
+
+# Téléchargement au démarrage
+if not os.path.exists(MODEL_PATH):
+    os.makedirs("model", exist_ok=True)
+    gdown.download(MODEL_URL, MODEL_PATH, quiet=False)
+    print("✅ Modèle téléchargé depuis Google Drive")
+else:
+    print("✅ Modèle déjà présent")
+
+@app.route('/')
+def home():
+    return "Modèle Alzheimer chargé avec succès!"
+
+if __name__ == '__main__':
+    app.run()

@@ -11,7 +11,7 @@ import requests
 import shutil
 import sys
 
-# Vérification stricte des versions
+# Vérification des versions
 REQUIRED_VERSIONS = {
     'tensorflow': '2.13.0',
     'numpy': '1.24.3',
@@ -37,7 +37,7 @@ if not check_versions():
 print("✅ Toutes les versions sont correctes")
 
 app = Flask(__name__)
-CORS(app)  # Configuration CORS
+CORS(app)
 
 # Configuration Hugging Face
 HF_MODEL_URL = "https://huggingface.co/aroussya/alzheimer-tflite/resolve/main/alzheimer_model_float32.tflite"
@@ -45,7 +45,7 @@ MODEL_DIR = os.path.join(os.getcwd(), "model")
 MODEL_PATH = os.path.join(MODEL_DIR, "alzheimer_model.tflite")
 
 def download_model():
-    """Télécharge le modèle avec gestion robuste des erreurs"""
+    """Télécharge le modèle depuis Hugging Face"""
     try:
         os.makedirs(MODEL_DIR, exist_ok=True)
         
@@ -98,7 +98,7 @@ def predict():
 
     try:
         # Traitement de l'image
-        img = Image.open(io.BytesIO(file.read())
+        img = Image.open(io.BytesIO(file.read()))
         img = img.convert('RGB').resize((224, 224))
         img_array = np.array(img, dtype=np.float32) / 255.0
         img_array = np.expand_dims(img_array, axis=0)

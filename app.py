@@ -13,7 +13,7 @@ app = Flask(__name__)
 CORS(app)
 
 # Configuration robuste
-MODEL_ID = "12zWlffsA0K6czhT1ohELJVN7UoT7AXpH"
+MODEL_ID = "1a9yahheIt8Bc2c_ssCo2DItvucAqRK4P"
 MODEL_DIR = os.path.join(os.getcwd(), "model")  # Chemin absolu
 MODEL_PATH = os.path.join(MODEL_DIR, "alzheimer_model.tflite")
 TEMP_PATH = os.path.join(MODEL_DIR, "temp.tflite")  # Fichier temporaire
@@ -141,4 +141,5 @@ def home():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 10000)))
+
 

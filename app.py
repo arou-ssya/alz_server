@@ -1,8 +1,6 @@
 import os
-os.system("pip install tensorflow==2.13.0 numpy==1.24.3 --force-reinstall")
-
-import tensorflow as tf
-import numpy as np
+import time
+import importlib.metadata
 from PIL import Image
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -10,31 +8,55 @@ import io
 import requests
 import shutil
 import sys
+import tensorflow as tf
+import numpy as np
 
-# Vérification des versions
-REQUIRED_VERSIONS = {
+# Installation des dépendances
+requirements = {
     'tensorflow': '2.13.0',
     'numpy': '1.24.3',
-    'flask': '2.3.2'
+    'flask': '2.3.2',
+    'flask-cors': '3.0.10',
+    'pillow': '9.5.0',
+    'requests': '2.26.0'
 }
+
+def install_dependencies():
+    for pkg, ver in requirements.items():
+        try:
+            __import__(pkg)
+            print(f"✅ {pkg} déjà installé")
+        except ImportError:
+            print(f"⏳ Installation de {pkg}...")
+            os.system(f"pip install {pkg}=={ver} --quiet")
+
+install_dependencies()
+
+# Vérification des versions
+REQUIRED_VERSIONS = requirements
 
 def check_versions():
     current_versions = {
         'tensorflow': tf.__version__,
         'numpy': np.__version__,
-        'flask': Flask.__version__
+        'flask': importlib.metadata.version('flask')
     }
     
     for lib, required_version in REQUIRED_VERSIONS.items():
-        if current_versions[lib] != required_version:
-            print(f"❌ Version incorrecte de {lib}. Requis: {required_version}, Actuelle: {current_versions[lib]}")
+        try:
+            current_version = current_versions.get(lib, importlib.metadata.version(lib))
+            if current_version != required_version:
+                print(f"❌ Version incorrecte de {lib}. Requis: {required_version}, Actuelle: {current_version}")
+                return False
+        except Exception as e:
+            print(f"❌ Impossible de vérifier la version de {lib}: {str(e)}")
             return False
+    
+    print("✅ Toutes les versions sont correctes")
     return True
 
 if not check_versions():
     sys.exit(1)
-
-print("✅ Toutes les versions sont correctes")
 
 app = Flask(__name__)
 CORS(app)
@@ -46,31 +68,43 @@ MODEL_PATH = os.path.join(MODEL_DIR, "alzheimer_model.tflite")
 
 def download_model():
     """Télécharge le modèle depuis Hugging Face"""
-    try:
-        os.makedirs(MODEL_DIR, exist_ok=True)
-        
-        if os.path.exists(MODEL_PATH) and os.path.getsize(MODEL_PATH) > 100000:
-            print("✅ Modèle déjà présent")
+    max_retries = 3
+    retry_delay = 5
+    
+    for attempt in range(max_retries):
+        try:
+            os.makedirs(MODEL_DIR, exist_ok=True)
+            
+            if os.path.exists(MODEL_PATH):
+                file_size = os.path.getsize(MODEL_PATH)
+                if file_size > 100000:
+                    print(f"✅ Modèle déjà présent ({file_size/1e6:.2f} MB)")
+                    return True
+                else:
+                    os.remove(MODEL_PATH)
+            
+            print(f"⏳ Tentative {attempt + 1} de téléchargement...")
+            
+            headers = {"User-Agent": "Flask-App/1.0"}
+            response = requests.get(HF_MODEL_URL, headers=headers, stream=True, timeout=30)
+            response.raise_for_status()
+            
+            temp_path = f"{MODEL_PATH}.tmp"
+            with open(temp_path, 'wb') as f:
+                for chunk in response.iter_content(chunk_size=8192):
+                    if chunk:
+                        f.write(chunk)
+            
+            shutil.move(temp_path, MODEL_PATH)
+            print(f"✅ Modèle téléchargé ({os.path.getsize(MODEL_PATH)/1e6:.2f} MB)")
             return True
             
-        print("⏳ Téléchargement du modèle...")
-        
-        headers = {"User-Agent": "Flask-App/1.0"}
-        response = requests.get(HF_MODEL_URL, headers=headers, stream=True)
-        response.raise_for_status()
-        
-        temp_path = f"{MODEL_PATH}.tmp"
-        with open(temp_path, 'wb') as f:
-            for chunk in response.iter_content(chunk_size=8192):
-                f.write(chunk)
-        
-        shutil.move(temp_path, MODEL_PATH)
-        print(f"✅ Modèle téléchargé ({os.path.getsize(MODEL_PATH)/1e6:.2f} MB)")
-        return True
-        
-    except Exception as e:
-        print(f"❌ Échec du téléchargement: {str(e)}")
-        return False
+        except Exception as e:
+            print(f"❌ Tentative {attempt + 1} échouée: {str(e)}")
+            if attempt < max_retries - 1:
+                time.sleep(retry_delay)
+    
+    return False
 
 # Initialisation
 if not download_model():
@@ -97,13 +131,11 @@ def predict():
         return jsonify({"error": "Fichier vide"}), 400
 
     try:
-        # Traitement de l'image
         img = Image.open(io.BytesIO(file.read()))
         img = img.convert('RGB').resize((224, 224))
         img_array = np.array(img, dtype=np.float32) / 255.0
         img_array = np.expand_dims(img_array, axis=0)
 
-        # Prédiction
         interpreter.set_tensor(input_details[0]['index'], img_array)
         interpreter.invoke()
         prediction = interpreter.get_tensor(output_details[0]['index'])
@@ -122,9 +154,11 @@ def home():
     return jsonify({
         "status": "running",
         "model_loaded": True,
-        "tensorflow_version": tf.__version__
+        "tensorflow_version": tf.__version__,
+        "flask_version": importlib.metadata.version('flask')
     })
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 10000))
+    print(f"🚀 Serveur démarré sur http://0.0.0.0:{port}")
     app.run(host='0.0.0.0', port=port, threaded=True)

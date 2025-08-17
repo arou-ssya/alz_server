@@ -18,7 +18,7 @@ requirements = {
     'flask': '2.3.2',
     'flask-cors': '3.0.10',
     'pillow': '9.5.0',
-    'requests': '2.26.0'
+    'requests': None
 }
 
 def install_dependencies():
@@ -159,3 +159,4 @@ if __name__ == '__main__':
     port = int(os.environ.get('PORT', 10000))
     print(f"🚀 Serveur démarré sur http://0.0.0.0:{port}")
     app.run(host='0.0.0.0', port=port, threaded=True)
+

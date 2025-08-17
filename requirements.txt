@@ -5,4 +5,7 @@ gdown==4.7.1
 numpy==1.21.2
 pillow==9.5.0
 flask==2.3.2
+requests==2.31.0
+huggingface-hub==0.19.4
+
 

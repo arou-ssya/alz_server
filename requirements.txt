@@ -2,12 +2,13 @@ tensorflow==2.15.0
 flask==2.3.2
 flask-cors==3.0.10
 pillow==10.4.0
-numpy==2.3.2
+numpy==1.24.3
 requests==2.26.0
 huggingface-hub==0.19.4
 protobuf==3.20.3
 gdown==4.7.1
 wget==3.2
+
 
 
 

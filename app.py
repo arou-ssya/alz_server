@@ -12,11 +12,12 @@ CORS(app)  # Autorise les requêtes depuis Flutter
 
 # Configuration du modèle
 MODEL_URL = "https://drive.google.com/uc?export=download&confirm=t&id=1Qm-lh5Fxw_7ojUYVKY81YHcmQ7uOAIRH"
-MODEL_PATH = "model/alzheimer_model_float32.tflite"
+MODEL_DIR = "model"
+MODEL_PATH = os.path.join(MODEL_DIR, "alzheimer_model_float32.tflite")
 
 # Télécharger le modèle au démarrage
 if not os.path.exists(MODEL_PATH):
-    os.makedirs("model", exist_ok=True)
+    os.makedirs(MODEL_DIR, exist_ok=True)
     try:
         gdown.download(MODEL_URL, MODEL_PATH, quiet=False)
         print("✅ Modèle téléchargé depuis Google Drive")
@@ -66,6 +67,7 @@ def home():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 10000)))
+
 
 
 

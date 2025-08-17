@@ -39,7 +39,7 @@ def check_versions():
     current_versions = {
         'tensorflow': tf.__version__,
         'numpy': np.__version__,
-        'flask': importlib.metadata.version('flask')
+        'flask': importlib.metadata.version('flask')  # ✅ correction ici
     }
     
     for lib, required_version in REQUIRED_VERSIONS.items():

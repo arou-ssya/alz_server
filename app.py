@@ -5,12 +5,46 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import io
 import os
+import requests
+import shutil
 
 app = Flask(__name__)
 CORS(app)
 
-# Chemin vers le modèle inclus dans l'image Docker
-MODEL_PATH = os.path.join(os.getcwd(), "alzheimer_model_float32.tflite")
+# Hugging Face URL du modèle
+HF_MODEL_URL = "https://huggingface.co/aroussya/alzheimer-tflite/resolve/main/alzheimer_model_float32.tflite?download=true"
+
+# Dossier pour stocker le modèle
+MODEL_DIR = os.path.join(os.getcwd(), "model")
+MODEL_PATH = os.path.join(MODEL_DIR, "alzheimer_model_float32.tflite")
+TEMP_PATH = os.path.join(MODEL_DIR, "temp.tflite")
+
+def download_model():
+    """Télécharge le modèle depuis Hugging Face si pas déjà présent."""
+    os.makedirs(MODEL_DIR, exist_ok=True)
+    
+    if os.path.exists(MODEL_PATH) and os.path.getsize(MODEL_PATH) > 100_000:
+        print("✅ Modèle déjà présent")
+        return True
+    
+    try:
+        print("⏳ Téléchargement du modèle depuis Hugging Face...")
+        with requests.get(HF_MODEL_URL, stream=True) as r:
+            r.raise_for_status()
+            with open(TEMP_PATH, 'wb') as f:
+                shutil.copyfileobj(r.raw, f)
+        
+        shutil.move(TEMP_PATH, MODEL_PATH)
+        print("✅ Modèle téléchargé avec succès")
+        return True
+    except Exception as e:
+        print(f"❌ Échec du téléchargement Hugging Face: {e}")
+        return False
+
+# Télécharger le modèle avant le démarrage de l'API
+if not download_model():
+    print("❌ Impossible de charger le modèle")
+    exit(1)
 
 # Charger le modèle TFLite
 interpreter = tf.lite.Interpreter(model_path=MODEL_PATH)

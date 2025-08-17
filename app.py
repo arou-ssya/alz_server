@@ -7,19 +7,18 @@ import io
 import os
 import requests
 import shutil
-# Vérifiez la version de TensorFlow
-print(f"Version de TensorFlow: {tf.__version__}")
-print(f"Version de TensorFlow Lite: {tf.lite.__version__}")
+import sys
+required_versions = {
+    'tensorflow': '2.13.0',
+    'numpy': '1.24.3'
+}
 
-# Chargement du modèle avec vérification
-try:
-    interpreter = tf.lite.Interpreter(model_path=MODEL_PATH)
-    interpreter.allocate_tensors()
-    print("⚡ Modèle chargé avec succès!")
-except Exception as e:
-    print(f"❌ Erreur de chargement: {str(e)}")
-    print("Essayez de re-convertir votre modèle avec la même version de TF")
-    exit(1)
+current_tf_version = tf.__version__
+if current_tf_version != required_versions['tensorflow']:
+    print(f"❌ Version incorrecte de TensorFlow. Requis: {required_versions['tensorflow']}, Actuelle: {current_tf_version}")
+    sys.exit(1)
+
+print(f"✅ TensorFlow {current_tf_version} correctement installé")
 
 app = Flask(__name__)
 CORS(app)
@@ -98,4 +97,5 @@ def home():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 10000)))
+
 
